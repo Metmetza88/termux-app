@@ -1,0 +1,39 @@
+name: Cyber AI Lab APK (debug)
+on:
+  workflow_dispatch:
+  push:
+    branches: [feature/cyber-ai-lab]
+    paths:
+      - '.github/workflows/cyber-ai-lab-apk.yml'
+      - 'cyber-ai-lab/**'
+      - '**/*.gradle'
+      - 'gradle/**'
+      - 'gradlew'
+  pull_request:
+    branches: [master]
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Verify preinstalled Android SDK
+        run: |
+          test -d "$ANDROID_HOME"
+          echo "Android SDK: $ANDROID_HOME"
+      - name: Build debug APK
+        run: |
+          chmod +x ./gradlew
+          ./gradlew assembleDebug --stacktrace
+      - name: Upload APKs
+        uses: actions/upload-artifact@v4
+        with:
+          name: termux-cyber-ai-lab-debug-apks
+          path: '**/build/outputs/apk/**/*.apk'
+          if-no-files-found: error
